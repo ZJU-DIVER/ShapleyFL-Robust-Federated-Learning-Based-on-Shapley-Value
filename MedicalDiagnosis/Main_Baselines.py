@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0,"/home/lixiang/FLamby-main")
-
 import torch
 from MedicalDiagnosis.utils import evaluate_model_on_tests
 

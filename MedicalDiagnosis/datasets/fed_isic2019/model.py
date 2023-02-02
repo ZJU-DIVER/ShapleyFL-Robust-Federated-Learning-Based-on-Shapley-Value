@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0,"/home/lixiang/FLamby-main")
 import random
 
 import albumentations

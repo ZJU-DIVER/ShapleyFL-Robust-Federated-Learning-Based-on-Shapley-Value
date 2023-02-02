@@ -20,17 +20,11 @@ from src_opt.utils.update import LocalUpdate, test_inference
 from src_opt.utils.models import MLP, CNNMnist, CNNFashion_Mnist, CNNCifar
 from src_opt.utils.Shapley import Shapley
 from src_opt.utils.CEXPIX import arms_selection
-from src_opt.utils.tools import get_dataset, average_weights, exp_details, avgSV_baseline, softmax, unbiased_selection, \
+from src_opt.utils.tools import get_dataset, average_weights, exp_details, avgSV_weights, softmax, unbiased_selection, \
     add_gradient_noise, add_random_gradient, get_noiseword
 
 args = args_parser()
 exp_details(args)
-
-def softmax(a):
-    exp_a = np.exp(a)
-    sum_exp_a = np.sum(exp_a)
-    y = exp_a / sum_exp_a
-    return y
 
 
 def solver(gamma):
@@ -106,15 +100,63 @@ def solver(gamma):
             local_weights.append(copy.deepcopy(w))
             local_losses.append(copy.deepcopy(loss))
 
-        Fed_sv = Shapley(local_weights, args, global_model, valid_dataset, init_acc)
-        shapley = Fed_sv.eval_ccshap_stratified(5)
-        # update estimated Shapley value
-
-        weight_shapley = softmax(shapley)
-        print(weight_shapley)
         # Add Gradient Noise
         local_weights = add_gradient_noise(args, local_weights, idxs_users)
-        global_weights = avgSV_baseline(local_weights, weight_shapley, original_weights)
+
+        Fed_sv = Shapley(local_weights, args, global_model, valid_dataset, init_acc)
+        shapley = Fed_sv.eval_ccshap_stratified(10)
+        # update estimated Shapley value
+
+        min_shapley = min(shapley)
+        max_shapley = max(shapley)
+        for i in range(len(shapley)):
+            global_shapley[idxs_users[i]] = (1 - gamma) * global_shapley[idxs_users[i]] + gamma * (
+                        shapley[i] - min_shapley) / (max_shapley - min_shapley)
+
+        rem = 0
+        first_flag = True
+        for i in range(len(normal_shapley)):
+            normal_shapley[i] = global_shapley[i]
+        sum_shapley = sum(normal_shapley)
+        for i in range(len(normal_shapley)):
+            normal_shapley[i] = normal_shapley[i] / sum_shapley
+
+        weight_shapley = np.zeros(len(normal_shapley))
+        for i in range(len(weight_shapley)):
+            weight_shapley[i] = normal_shapley[i] / probabilities[i]
+
+        global_weights = avgSV_weights(local_weights, weight_shapley[idxs_users], original_weights)
+
+        # print(normal_shapley)
+        # for k in range(m):
+        #     temp_p = np.zeros(len(normal_shapley))
+        #     top_k_idxs = []
+        #     if k > 0:
+        #         top_k_idxs = np.argsort(normal_shapley)[-k:]
+        #     temp_exp_sum = 0
+        #     for l in range(len(normal_shapley)):
+        #         if l not in top_k_idxs:
+        #             temp_exp_sum += normal_shapley[l]
+        #
+        #     for l in range(len(normal_shapley)):
+        #         if l not in top_k_idxs:
+        #             temp_p[l] = normal_shapley[l] / temp_exp_sum * (m - k)
+        #         else:
+        #             temp_p[l] = 1
+        #     temp_target = 0
+        #     illegal = False
+        #     temp_p_sum = 0
+        #     for l in range(len(normal_shapley)):
+        #         temp_p_sum += temp_p[l]
+        #         if temp_p[l] > 1 or temp_p_sum > m:
+        #             illegal = True
+        #         temp_target += normal_shapley[l] / temp_p[l]
+        #     if illegal:
+        #         continue
+        #     if temp_target < rem or first_flag:
+        #         probabilities = copy.deepcopy(temp_p)
+        #         rem = temp_target
+        #         first_flag = False
 
         # update global weights
         global_model.load_state_dict(global_weights)
@@ -187,7 +229,7 @@ if __name__ == '__main__':
         test_acc += test
         train_acc += train
         show_avg(acc_list)
-        path = '../save_opt/{}/FedLSV_{}_cnn_E{}_N{}_gamma{}_repeat{}_{}.txt'.format(NoiseWord[noise], args.dataset, args.epochs,
+        path = '../save_opt/{}/FedSV_{}_cnn_E{}_N{}_gamma{}_repeat{}_{}.txt'.format(NoiseWord[noise], args.dataset, args.epochs,
                                                                                        args.noiselevel, gamma, repeat, args.device)
         f = open(path, "a+")
         f.writelines("Repetition [%d] : [%s]\n" % (_ + 1, ', '.join(["%.4f" % w for w in acc_list])))

@@ -12,7 +12,6 @@ from MedicalDiagnosis.datasets.fed_isic2019 import (
 )
 def average_weights(w):
     """
-    最正常的平均
     Returns the average of the weights.
     """
     w_avg = copy.deepcopy(w[0])
