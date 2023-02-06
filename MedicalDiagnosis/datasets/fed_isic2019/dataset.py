@@ -1,6 +1,6 @@
-import os
-import sys
-sys.path.insert(0,"/home/lixiang/FLamby-main")
+import os,sys
+cur_path = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, cur_path + "/..")
 import random
 from pathlib import Path
 

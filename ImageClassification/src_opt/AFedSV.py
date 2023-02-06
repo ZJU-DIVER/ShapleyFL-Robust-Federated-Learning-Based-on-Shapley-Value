@@ -229,7 +229,7 @@ if __name__ == '__main__':
         test_acc += test
         train_acc += train
         show_avg(acc_list)
-        path = '../save_opt/{}/FedSV_{}_cnn_E{}_N{}_gamma{}_repeat{}_{}.txt'.format(NoiseWord[noise], args.dataset, args.epochs,
+        path = '../save_opt/{}/AFedSV_{}_cnn_E{}_N{}_gamma{}_repeat{}_{}.txt'.format(NoiseWord[noise], args.dataset, args.epochs,
                                                                                        args.noiselevel, gamma, repeat, args.device)
         f = open(path, "a+")
         f.writelines("Repetition [%d] : [%s]\n" % (_ + 1, ', '.join(["%.4f" % w for w in acc_list])))

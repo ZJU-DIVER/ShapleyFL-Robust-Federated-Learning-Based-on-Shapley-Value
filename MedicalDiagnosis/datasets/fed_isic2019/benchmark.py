@@ -5,7 +5,9 @@ import random
 import time
 
 import sys
-sys.path.insert(0,"/home/lixiang/FLamby-main")
+cur_path = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, cur_path + "/..")
+
 import albumentations
 import dataset
 import torch
