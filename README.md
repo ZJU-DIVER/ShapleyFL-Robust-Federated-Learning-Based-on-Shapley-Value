@@ -12,7 +12,7 @@ We study 5 popular data and model poisoning scenarios based on the Non-IID data 
 4. malicious clients with data noise
 5. attacks with gradient poisoning
 
- **The medical diagnosis experiments** are conducted on a realistic cross-silo healthcare dataset Fed-ISIC2019. The best-performing EfficientNets architecture is used as the central model. The code is based on Flamby( https://github.com/owkin/FLamby/tree/main/flamby/datasets). Please see its document for more details.
+**The medical diagnosis experiments** are conducted on a realistic cross-silo healthcare dataset Fed-ISIC2019. The best-performing EfficientNets architecture is used as the central model. The code is based on Flamby( https://github.com/owkin/FLamby/tree/main/flamby/datasets). Please see its document for more details.
 
 ## Requirments
 
