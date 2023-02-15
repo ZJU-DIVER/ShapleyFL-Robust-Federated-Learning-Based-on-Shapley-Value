@@ -119,8 +119,11 @@ def get_dataset(args):
             # Sample IID user data from Mnist
             user_groups = mnist_iid(train_dataset, args.num_users)
         else:
+            # Long-tailed
+            if args.noise == 1:
+                user_groups = cifar_longtail(train_dataset,  args.num_users, args.noiselevel)
             # Sample 0_NonIID user data from Mnist
-            if args.unequal:
+            elif args.unequal:
                 # Chose uneuqal splits for every user
                 user_groups = mnist_noniid_unequal(train_dataset, args.num_users)
             else:

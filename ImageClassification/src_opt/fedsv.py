@@ -107,7 +107,7 @@ def solver(gamma):
             local_losses.append(copy.deepcopy(loss))
 
         Fed_sv = Shapley(local_weights, args, global_model, valid_dataset, init_acc)
-        shapley = Fed_sv.eval_ccshap_stratified(5)
+        shapley = Fed_sv.eval_mcshap(5)
         # update estimated Shapley value
 
         weight_shapley = softmax(shapley)

@@ -102,7 +102,7 @@ def solver():
 
         local_weights = add_gradient_noise(args, local_weights, idxs_users)
         Fed_sv = Shapley(local_weights, args, global_model, valid_dataset, init_acc)
-        shapley = Fed_sv.eval_ccshap_stratified(5)
+        shapley = Fed_sv.eval_mcshap(5)
         #update estimated Shapley value
         for i in range(len(shapley)):
             Phi[idxs_users[i]] = Phi[idxs_users[i]]*0.75+shapley[i]*0.25

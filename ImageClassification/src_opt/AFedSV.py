@@ -104,7 +104,7 @@ def solver(gamma):
         local_weights = add_gradient_noise(args, local_weights, idxs_users)
 
         Fed_sv = Shapley(local_weights, args, global_model, valid_dataset, init_acc)
-        shapley = Fed_sv.eval_ccshap_stratified(10)
+        shapley = Fed_sv.eval_mcshap(10)
         # update estimated Shapley value
 
         min_shapley = min(shapley)
