@@ -1,6 +1,6 @@
 # ShapleyFL: Robust Federated Learning Based on Shapley Value
 
-Implementation of the FL paper : ShapleyFL: Robust Federated Learning Based on Shapley Value
+Implementation of the SIGKDD2023 paper : ShapleyFL: Robust Federated Learning Based on Shapley Value
 
 **The image classification experiments** are produced on MNIST, Fashion MNIST and CIFAR10. Since the purpose of these experiments are to illustrate the effectiveness of the federated learning paradigm, only simple models CNN are used.
 
