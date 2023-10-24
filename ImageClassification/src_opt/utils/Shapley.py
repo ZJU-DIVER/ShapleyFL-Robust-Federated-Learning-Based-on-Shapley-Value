@@ -200,12 +200,96 @@ class Shapley():
                     shapley[i] += SV_estimator[i][j] / cnt[i][j] / len(self.local_weights)
 
         return shapley
+    def eval_ccshap(self, subnumber):
+        shapley = np.zeros(len(self.local_weights))
+        length = len(self.local_weights)
+        for step in trange(int(subnumber * length)):
+            index = np.random.permutation(len(self.local_weights))
+            j = random.randint(1, len(shapley))
+            left_weights = self.get_weights(j, index, self.local_weights)
+            left_weight = average_weights(left_weights)
+            self.global_model.load_state_dict(left_weight)
+            self.global_model.eval()
+            left_acc, current_loss = test_inference(self.args, self.global_model, self.valid_dataset)
+            right_weights = self.get_weights_right(j, index, self.local_weights)
+            if len(right_weights) > 0:
+                right_weight = average_weights(right_weights)
+                self.global_model.load_state_dict(right_weight)
+                self.global_model.eval()
+                right_acc, current_loss = test_inference(self.args, self.global_model, self.valid_dataset)
+            else:
+                right_acc = self.init_acc
+            for k in range(len(index)):
+                if k < j:
+                    if j == len(shapley):
+                        shapley[index[k]] += (left_acc - right_acc) / len(shapley)
+                    else:
+                        shapley[index[k]] += (left_acc - right_acc) / (2 * j)
+                else:
+                    shapley[index[k]] += (right_acc - left_acc) / (2 * (len(index) - j))
+        shapley = [shap / subnumber for shap in shapley]
+        return shapley
 
+    def eval_ccshap_time(self, time_budget):
+        shapley = np.zeros(len(self.local_weights))
+        length = len(self.local_weights)
+        time_start = time.time()
+        Max = int(1e9)
+        cnt = 0
+        for step in trange(Max):
+            if cnt%length == 0:
+                time_end = time.time()
+                if time_end-time_start > time_budget:
+                    break
+            cnt += 1
+            index = np.random.permutation(len(self.local_weights))
+            j = random.randint(1, len(shapley))
+            left_weights = self.get_weights(j, index, self.local_weights)
+            left_weight = average_weights(left_weights)
+            self.global_model.load_state_dict(left_weight)
+            self.global_model.eval()
+            left_acc, current_loss = test_inference(self.args, self.global_model, self.valid_dataset)
+            right_weights = self.get_weights_right(j, index, self.local_weights)
+            if len(right_weights) > 0:
+                right_weight = average_weights(right_weights)
+                self.global_model.load_state_dict(right_weight)
+                self.global_model.eval()
+                right_acc, current_loss = test_inference(self.args, self.global_model, self.valid_dataset)
+            else:
+                right_acc = self.init_acc
+            for k in range(len(index)):
+                if k < j:
+                    if j == len(shapley):
+                        shapley[index[k]] += (left_acc - right_acc) / len(shapley)
+                    else:
+                        shapley[index[k]] += (left_acc - right_acc) / (2 * j)
+                else:
+                    shapley[index[k]] += (right_acc - left_acc) / (2 * (len(index) - j))
+        shapley = [shap / cnt * length for shap in shapley]
+        return shapley
 
+    def eval_ccshap_stratified(self,subnumber):
+        length = len(self.local_weights)
+        shapley = np.zeros(length)
+        shapley_estimator = [[[] for i in range(length)] for j in range(length)]
 
+        #init
+        for i in trange(subnumber):
+            for j in range(length):
+                index = np.random.permutation(len(self.local_weights))
+                left_acc, right_acc = self.get_acc(index,j+1)
+                for k in range(len(index)):
+                    if k <= j:
+                        shapley_estimator[index[k]][j].append(left_acc-right_acc)
+                    else:
+                        shapley_estimator[index[k]][length-j-2].append(right_acc-left_acc)
 
+        for i in range(length):
+            for j in range(length):
+                if len(shapley_estimator[i][j]) > 0:
+                    shapley[i] += np.mean(shapley_estimator[i][j])/length
 
-
+        return shapley
 
 
 
